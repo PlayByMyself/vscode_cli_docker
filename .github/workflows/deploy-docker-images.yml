@@ -35,7 +35,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=v${{ steps.versions.outputs.code_cli_version }}
+            type=semver,pattern=v{{version}},value=${{ steps.versions.outputs.code_cli_version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push the Docker image
