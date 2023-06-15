@@ -16,11 +16,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set Vscode Cli Version
-        id: versions
+      - name: Set Env File
         run: |
-          echo "::set-output name=code_cli_version::$(curl -sL https://code.visualstudio.com/updates | bash ./extract_version.sh)"
-
+          echo "code_cli_version=$(curl -sL https://code.visualstudio.com/updates | bash ./extract_version.sh)" >> "$GITHUB_ENV"
+      
       - name: Log into the Container registry
         uses: docker/login-action@v2
         with:
@@ -31,7 +30,7 @@ jobs:
       - name: Log into the Container registry
         uses: docker/login-action@v2
         with:
-          username: ${{ env.DOCKERHUB_USERNAME }}
+          username: ${{ github.actor }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata for the Docker image
@@ -42,7 +41,7 @@ jobs:
             ${{ env.IMAGE_NAME }}
             ghcr.io/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}},value=${{ steps.versions.outputs.code_cli_version }}
+            type=semver,pattern={{version}},value=${{ env.code_cli_version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push the Docker image
@@ -54,4 +53,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            CODE_CLI_VERSION=${{ steps.versions.outputs.code_cli_version }}
+            CODE_CLI_VERSION=${{ env.code_cli_version }}
