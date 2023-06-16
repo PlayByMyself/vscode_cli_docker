@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+    inputs:
+      force_run:
+        description: 'True to force run all step'
+        required: false
+        default: false
+        type: boolean
 
 env:
   IMAGE_NAME: playbymyself/vscode_cli
@@ -16,11 +22,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set Env File
+      - name: Set Version Env 
         run: |
           echo "code_cli_version=$(curl -sL https://code.visualstudio.com/updates | bash ./extract_version.sh)" >> "$GITHUB_ENV"
       
+      - name: Set Image Exist Env 
+        run: |
+          echo "image_exist=$(bash check_image_version.sh playbymyself/vscode_cli:${{ env.code_cli_version }})" >> "$GITHUB_ENV"
+
       - name: Log into the Container registry
+        if: ${{ !env.image_exist || inputs.force_run }}
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -28,12 +39,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log into the Container registry
+        if: ${{ !env.image_exist || inputs.force_run }}
         uses: docker/login-action@v2
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata for the Docker image
+        if: ${{ !env.image_exist || inputs.force_run }}
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -45,6 +58,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push the Docker image
+        if: ${{ !env.image_exist || inputs.force_run }}
         uses: docker/build-push-action@v3
         with:
           context: .
