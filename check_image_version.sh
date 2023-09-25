@@ -1,40 +1,22 @@
 #!/bin/bash
 
-image_name=$1
+# Check if the script is passed the correct number of arguments
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <image_name:tag>"
+    exit 1
+fi
 
-# Extract the repository and tag from the image name
-repo=$(echo "$image_name" | cut -d ':' -f 1)
-tag=$(echo "$image_name" | cut -d ':' -f 2)
+# Get the passed argument as the image name and tag
+image="$1"
 
-# Send API request and extract the versions
-response=$(curl -s "https://hub.docker.com/v2/repositories/$repo/tags/?page_size=5&page=1&name=$tag")
+# Use the docker manifest inspect command to check if the image exists
+docker manifest inspect "$image" > /dev/null 2>&1
 
-# Function to extract versions from JSON response
-extract_versions() {
-    python -c '
-import sys
-import json
-
-# Parse JSON response
-data = json.loads(sys.stdin.read())
-
-# Extract versions from results
-versions = [result["name"] for result in data.get("results", [])]
-
-# Print versions
-print("\n".join(versions))
-'
-}
-
-# Check if the specified version exists
-version=$(echo "$response" | extract_versions)
-
+# Check the return value of the command
 if [ $? -eq 0 ]; then
-    if echo "$version" | grep -q "^$tag$"; then
-        echo 1  # Version exists
-    else
-        echo 0 # Version does not exist
-    fi
+    # The image exists, output 1
+    echo 1
 else
-    echo "Error: Failed to parse API response"
+    # The image does not exist, output 0
+    echo 0
 fi

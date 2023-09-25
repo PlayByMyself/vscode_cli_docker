@@ -25,13 +25,8 @@ jobs:
       - name: Set Version Env 
         run: |
           echo "code_cli_version=$(curl -sL https://code.visualstudio.com/updates | bash ./extract_version.sh)" >> "$GITHUB_ENV"
-      
-      - name: Set Image Exist Env 
-        run: |
-          echo "image_exist=$(bash check_image_version.sh playbymyself/vscode_cli:${{ env.code_cli_version }})" >> "$GITHUB_ENV"
 
       - name: Log into the Container registry
-        if: ${{ !env.image_exist || inputs.force_run }}
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -39,12 +34,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log into the Container registry
-        if: ${{ !env.image_exist || inputs.force_run }}
         uses: docker/login-action@v2
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set Image Exist Env 
+        run: |
+            echo "image_exist=$(bash check_image_version.sh playbymyself/vscode_cli:${{ env.code_cli_version }})" >> "$GITHUB_ENV"
+            
       - name: Extract metadata for the Docker image
         if: ${{ !env.image_exist || inputs.force_run }}
         id: meta
