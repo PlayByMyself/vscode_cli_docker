@@ -15,8 +15,8 @@ docker manifest inspect "$image" > /dev/null 2>&1
 # Check the return value of the command
 if [ $? -eq 0 ]; then
     # The image exists, output 1
-    echo 1
+    echo true
 else
     # The image does not exist, output 0
-    echo 0
+    echo false
 fi

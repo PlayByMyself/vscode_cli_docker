@@ -42,9 +42,9 @@ jobs:
       - name: Set Image Exist Env 
         run: |
             echo "image_exist=$(bash check_image_version.sh playbymyself/vscode_cli:${{ env.code_cli_version }})" >> "$GITHUB_ENV"
-            
+
       - name: Extract metadata for the Docker image
-        if: ${{ !env.image_exist || inputs.force_run }}
+        if: ${{ env.image_exist == 'false' || inputs.force_run }}
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -56,7 +56,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push the Docker image
-        if: ${{ !env.image_exist || inputs.force_run }}
+        if: ${{ env.image_exist == 'false' || inputs.force_run }}
         uses: docker/build-push-action@v3
         with:
           context: .
