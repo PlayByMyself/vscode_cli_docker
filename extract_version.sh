@@ -8,4 +8,7 @@ version=$(echo "$html_content" | grep -oE "$update_version_pattern" | awk '{prin
 if [ -z "$version" ]; then
     version=$(echo "$html_content" | grep -oE "$version_pattern" | awk '{gsub(/\(version |\)/, ""); print $0}')
 fi
+if [[ $version =~ ^[0-9]+\.[0-9]+$ ]]; then
+    version="$version.0"
+fi
 echo "$version"
