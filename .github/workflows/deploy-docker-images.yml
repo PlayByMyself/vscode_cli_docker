@@ -24,7 +24,7 @@ jobs:
 
       - name: Set Version Env 
         run: |
-          echo "code_cli_version=$(curl -sL https://code.visualstudio.com/updates | bash ./extract_version.sh)" >> "$GITHUB_ENV"
+          echo "code_cli_version=$(bash ./extract_version.sh)" >> "$GITHUB_ENV"
 
       - name: Log into the Container registry
         uses: docker/login-action@v2
